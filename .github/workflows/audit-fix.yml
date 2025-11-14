@@ -348,7 +348,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH_NAME"
-          git add .
+          
+          # Add only source code and dependency files, excluding workflow files
+          # This prevents the "workflows permission" error when pushing
+          git add src/ package.json package-lock.json tsconfig.json || true
+          git add *.config.js *.config.mjs *.config.json || true
+          git add tests/ || true
+          
+          # Check if there are any changes to commit
+          if git diff --cached --quiet; then
+            echo "No source code changes to commit"
+            echo "branch_name=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
           git commit -m "⚙️ Apply automated audit fixes
           
           - ESLint automatic fixes
