@@ -16,7 +16,10 @@
     "prepublishOnly": "npm run lint && npm run build",
     "agent8:build": "cd agents/agent8 && npm install && npm run build",
     "agent8:assess": "cd agents/agent8 && npm run assess",
-    "agent8:weekly": "./agents/agent8/run-weekly-assessment.sh"
+    "agent8:weekly": "./agents/agent8/run-weekly-assessment.sh",
+    "agent9:build": "cd agents/agent9 && npm install && npm run build",
+    "agent9:optimize": "cd agents/agent9 && npm run optimize",
+    "agent9:weekly": "./agents/agent9/run-weekly-optimization.sh"
   },
   "overrides": {
     "js-yaml": "^4.1.1"
