@@ -355,6 +355,7 @@ If you need to adjust rate limits, modify the `limiter` and `authLimiter` config
 - **[Deployment Guide](DEPLOYMENT.md)** - Production deployment instructions for multiple platforms
 - **[Security Policy](SECURITY.md)** - Security best practices and vulnerability reporting
 - **[Monitoring Guide](MONITORING.md)** - Observability, logging, and alerting setup
+- **[Interface Solutions](INTERFACE_SOLUTIONS.md)** - UI/Interface planning and implementation options
 - **[Contributing](CONTRIBUTING.md)** - Contribution guidelines
 - **[Changelog](CHANGELOG.md)** - Version history and release notes
 
@@ -465,6 +466,8 @@ A: Not in the current version. Planned for future releases.
 - [ ] Multi-tenancy Support
 - [ ] API Rate Plans
 - [ ] CI/CD Pipelines
+
+**Note**: For UI/Interface planning and available solutions, see [INTERFACE_SOLUTIONS.md](INTERFACE_SOLUTIONS.md) which provides research and recommendations for implementing user interfaces including GitHub-native solutions, admin dashboards, and low-code options.
 
 ## Contributing
 
