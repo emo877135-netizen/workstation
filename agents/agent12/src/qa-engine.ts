@@ -98,11 +98,31 @@ export class QAEngine {
   }
 
   /**
-   * Load handoff artifacts from all agents
+   * Load handoff artifacts from all agents (1-12)
    */
   private loadHandoffArtifacts(): Record<number, AgentHandoff | null> {
     const handoffs: Record<number, AgentHandoff | null> = {};
     
+    // Load build setup agents (1-6) - check for setup-complete artifacts
+    for (let agentId = 1; agentId <= 6; agentId++) {
+      const setupPath = path.join(this.projectRoot, `.agent${agentId}-setup-complete.json`);
+      
+      if (fs.existsSync(setupPath)) {
+        try {
+          const data = fs.readFileSync(setupPath, 'utf-8');
+          handoffs[agentId] = JSON.parse(data);
+          console.log(`✅ Loaded setup artifact from Agent ${agentId}`);
+        } catch (error) {
+          console.warn(`⚠️  Failed to parse Agent ${agentId} setup artifact`);
+          handoffs[agentId] = null;
+        }
+      } else {
+        console.log(`ℹ️  No setup artifact for Agent ${agentId} (build setup not run)`);
+        handoffs[agentId] = null;
+      }
+    }
+    
+    // Load regular cycle agents (7-11)
     for (let agentId = 7; agentId <= 11; agentId++) {
       const handoffPath = path.join(this.projectRoot, `.agent${agentId}-handoff.json`);
       
@@ -603,7 +623,7 @@ ${metrics.agents_failed.map(id => `- ❌ Agent ${id}`).join('\n') || '- None'}
     
     try {
       // Step 1: Load handoff artifacts
-      console.log('📥 Loading handoff artifacts from Agents 7-11...');
+      console.log('📥 Loading handoff artifacts from All Agents (1-12)...');
       const handoffs = this.loadHandoffArtifacts();
       console.log('');
       

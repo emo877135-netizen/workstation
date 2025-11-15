@@ -14,6 +14,12 @@
     "test:integration": "jest --testPathPattern=integration",
     "audit-ci": "audit-ci --moderate",
     "prepublishOnly": "npm run lint && npm run build",
+    "agent1:setup": "./agents/agent1/run-build-setup.sh",
+    "agent2:setup": "./agents/agent2/run-build-setup.sh",
+    "agent3:setup": "./agents/agent3/run-build-setup.sh",
+    "agent4:setup": "./agents/agent4/run-build-setup.sh",
+    "agent5:setup": "./agents/agent5/run-build-setup.sh",
+    "agent6:setup": "./agents/agent6/run-build-setup.sh",
     "agent7:weekly": "./agents/agent7/run-weekly-security.sh",
     "agent8:build": "cd agents/agent8 && npm install && npm run build",
     "agent8:assess": "cd agents/agent8 && npm run assess",
@@ -32,7 +38,8 @@
     "agent12:weekly": "./agents/agent12/run-weekly-qa.sh",
     "automation:install": "bash .automation/install-autonomous-system.sh",
     "automation:trigger": "bash .automation/trigger-cycle-now.sh",
-    "automation:health": "bash .automation/check-cycle-health.sh"
+    "automation:health": "bash .automation/check-cycle-health.sh",
+    "build-setup:all": "npm run agent1:setup && npm run agent2:setup && npm run agent3:setup && npm run agent4:setup && npm run agent5:setup && npm run agent6:setup"
   },
   "overrides": {
     "js-yaml": "^4.1.1"

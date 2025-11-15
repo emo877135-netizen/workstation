@@ -16,6 +16,21 @@ fix-summary.md
 fixes/
 *.rej
 
+# Agent 1-6 artifacts (Build Setup Agents)
+agents/agent1/reports/*/
+!agents/agent1/reports/.gitkeep
+agents/agent2/reports/*/
+!agents/agent2/reports/.gitkeep
+agents/agent3/reports/*/
+!agents/agent3/reports/.gitkeep
+agents/agent4/reports/*/
+!agents/agent4/reports/.gitkeep
+agents/agent5/reports/*/
+!agents/agent5/reports/.gitkeep
+agents/agent6/reports/*/
+!agents/agent6/reports/.gitkeep
+.agent*-setup-complete.json
+
 # Agent 7 artifacts
 agents/agent7/reports/*/
 !agents/agent7/reports/.gitkeep
