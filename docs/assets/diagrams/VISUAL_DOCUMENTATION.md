@@ -690,7 +690,7 @@ When updating system architecture or workflow:
 - [ARCHITECTURE.md](../architecture/ARCHITECTURE.md) - Detailed architecture documentation
 - [PROJECT_TIMELINE.md](../../PROJECT_TIMELINE.md) - Complete project timeline
 - [DEVELOPMENT_PHASES.md](../../DEVELOPMENT_PHASES.md) - Phase documentation
-- [ROADMAP.md](../architecture/ROADMAP.md) - Future plans
+- [ROADMAP.md](../../architecture/ROADMAP.md) - Future plans
 
 ---
 
