@@ -39,7 +39,12 @@
     "automation:install": "bash .automation/install-autonomous-system.sh",
     "automation:trigger": "bash .automation/trigger-cycle-now.sh",
     "automation:health": "bash .automation/check-cycle-health.sh",
-    "build-setup:all": "npm run agent1:setup && npm run agent2:setup && npm run agent3:setup && npm run agent4:setup && npm run agent5:setup && npm run agent6:setup"
+    "build-setup:all": "npm run agent1:setup && npm run agent2:setup && npm run agent3:setup && npm run agent4:setup && npm run agent5:setup && npm run agent6:setup",
+    "agent-builder:build": "ts-node scripts/agent-builder/agent-builder.ts --agent",
+    "agent-builder:build-all": "ts-node scripts/agent-builder/agent-builder.ts --all",
+    "orchestrator:deploy": "ts-node scripts/agent-builder/orchestrator.ts --agent",
+    "orchestrator:deploy-all": "ts-node scripts/agent-builder/orchestrator.ts --all",
+    "orchestrator:rollback": "ts-node scripts/agent-builder/orchestrator.ts --rollback"
   },
   "overrides": {
     "js-yaml": "^4.1.1"
