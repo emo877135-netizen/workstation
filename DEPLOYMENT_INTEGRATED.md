@@ -13,7 +13,8 @@ This guide covers deployment of the fully integrated workstation platform with a
 6. [MCP Setup](#mcp-setup)
 7. [Health Checks & Monitoring](#health-checks--monitoring)
 8. [Rollback & Recovery](#rollback--recovery)
-9. [Troubleshooting](#troubleshooting)
+9. [Build Documentation](#build-documentation)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -472,8 +473,191 @@ docker run -d \
 
 ---
 
+## Build Documentation
+
+### Build Process Overview
+
+The workstation platform uses a multi-stage Docker build process for optimized production images:
+
+```
+Build Stage (node:18-alpine)
+  ↓
+  1. Install all dependencies (including dev)
+  2. Compile TypeScript to JavaScript
+  3. Run build scripts
+  ↓
+Production Stage (node:18-alpine)
+  ↓
+  1. Copy package files
+  2. Install production dependencies only
+  3. Copy compiled code from build stage
+  4. Set up non-root user
+  5. Configure health checks
+```
+
+### Local Build
+
+```bash
+# Install dependencies
+npm install
+
+# Run linter
+npm run lint
+
+# Compile TypeScript
+npm run build
+
+# Run tests
+npm test
+
+# Full validation (lint + build + test)
+npm run validate
+```
+
+### Docker Build
+
+**Standard Build:**
+
+```bash
+# Build with version tag
+docker build \
+  --tag workstation:1.0.0 \
+  --tag workstation:latest \
+  --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  --build-arg VCS_REF=$(git rev-parse HEAD) \
+  --build-arg VERSION=1.0.0 \
+  -f Dockerfile .
+```
+
+**Multi-Architecture Build:**
+
+```bash
+# Build for multiple platforms
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --tag workstation:1.0.0 \
+  --tag workstation:latest \
+  --push \
+  -f Dockerfile .
+```
+
+### Build Artifacts
+
+After successful build, the following artifacts are generated:
+
+```
+dist/
+├── index.js                    # Main entry point
+├── auth/                       # JWT authentication
+│   └── jwt.js
+├── automation/                 # Automation logic
+│   ├── agents/
+│   ├── orchestrator/
+│   ├── workflow/
+│   └── db/
+│       └── schema.sql         # Database schema (copied)
+├── middleware/                 # Express middleware
+├── utils/                      # Utility functions
+├── routes/                     # API routes
+└── services/                   # Service layer
+```
+
+### Build Verification
+
+```bash
+# Verify build output
+ls -la dist/
+
+# Check build size
+du -sh dist/
+
+# Test compiled code
+node dist/index.js
+
+# Or with Docker
+docker run --rm workstation:latest node dist/index.js --version
+```
+
+### Error Handling in Build Process
+
+**Common Build Errors:**
+
+1. **TypeScript Compilation Errors**
+   ```
+   ERROR_CODE: TS2307
+   SOLUTION: Install missing @types/* packages
+   ```
+
+2. **Missing Dependencies**
+   ```
+   ERROR_CODE: MODULE_NOT_FOUND
+   SOLUTION: Run npm install
+   ```
+
+3. **Asset Copy Failures**
+   ```
+   ERROR_CODE: ENOENT
+   SOLUTION: Verify schema.sql exists in src/automation/db/
+   ```
+
+**Rollback Notes for Build Changes:**
+
+```bash
+# If new build breaks:
+# 1. Revert Dockerfile changes
+git checkout HEAD~1 -- Dockerfile
+
+# 2. Rebuild with previous version
+docker build --tag workstation:rollback .
+
+# 3. Update docker-compose.yml
+sed -i 's/workstation:latest/workstation:rollback/' docker-compose.yml
+
+# 4. Restart services
+docker-compose down && docker-compose up -d
+```
+
+### Continuous Integration Build
+
+The CI/CD pipeline runs automated builds on:
+- Push to main/develop branches
+- Pull requests
+- Tagged releases
+
+**GitHub Actions Build:**
+
+```yaml
+# .github/workflows/build.yml
+- name: Build and Test
+  run: |
+    npm ci
+    npm run lint
+    npm run build
+    npm test
+    
+- name: Build Docker Image
+  run: |
+    docker build \
+      --tag workstation:${{ github.sha }} \
+      --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+      --build-arg VCS_REF=${{ github.sha }} \
+      .
+```
+
+### Build Optimization Tips
+
+1. **Layer Caching**: Organize Dockerfile to maximize layer reuse
+2. **Multi-stage**: Use separate build and production stages
+3. **Dependency Optimization**: Use `npm ci` instead of `npm install`
+4. **Asset Minimization**: Minify and compress production assets
+5. **Security Scanning**: Run vulnerability scans on built images
+
+---
+
 ## Next Steps
 
+- **[Rollback Procedures](./ROLLBACK_PROCEDURES.md)** - Comprehensive rollback guide
+- **[MCP Containerization Guide](./MCP_CONTAINERIZATION_GUIDE.md)** - Data isolation and container management
 - [API Documentation](./API.md)
 - [Architecture Details](./ARCHITECTURE.md)
 - [Security Best Practices](./SECURITY.md)
@@ -481,5 +665,5 @@ docker run -d \
 
 ---
 
-**Last Updated**: 2025-11-17  
-**Version**: 1.0.0
+**Last Updated**: 2025-11-18  
+**Version**: 1.0.1
