@@ -1,5 +1,11 @@
 # Integrated Workstation Deployment Guide
 
+**Last Updated**: November 18, 2025  
+**Related Documentation**: 
+- [CI/CD Fixes Documentation](CI_FIXES_DOCUMENTATION.md)
+- [Rollback Procedures](ROLLBACK_PROCEDURES.md)
+- [Quickstart Guide](QUICKSTART_INTEGRATED.md)
+
 ## Architecture Overview
 
 This guide covers the deployment of the integrated workstation platform combining JWT authentication, agent server, and MCP integration.
@@ -25,6 +31,18 @@ This guide covers the deployment of the integrated workstation platform combinin
 │                                                       │
 └─────────────────────────────────────────────────────┘
 ```
+
+### Quality Assurance
+
+Before any code reaches this deployment:
+- ✅ **Linting**: Code style validation
+- ✅ **Build**: TypeScript compilation
+- ✅ **Tests**: 146 tests with 65.66% coverage
+- ✅ **Coverage Thresholds**: Quality gates enforced
+- ✅ **Security Scanning**: No vulnerabilities or secrets
+- ✅ **Error Handling**: Comprehensive error recovery
+
+See [CI/CD Fixes Documentation](CI_FIXES_DOCUMENTATION.md) for details on how we prevent production failures.
 
 ## Deployment Options
 

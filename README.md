@@ -101,6 +101,10 @@ open docs/landing.html
 | [🛣️ Roadmap](docs/architecture/ROADMAP.md) | Future plans |
 | [🔐 Security](docs/guides/SECURITY.md) | Security best practices |
 | [🚀 Deployment](docs/guides/DEPLOYMENT.md) | Deployment options |
+| [🔄 Rollback Procedures](ROLLBACK_PROCEDURES.md) | Emergency rollback and recovery |
+| [🐛 CI/CD Fixes](CI_FIXES_DOCUMENTATION.md) | CI pipeline fixes and error prevention |
+| [⚡ Integrated Deployment](DEPLOYMENT_INTEGRATED.md) | Full-stack deployment with rollback |
+| [🚀 Integrated Quickstart](QUICKSTART_INTEGRATED.md) | Quickstart for integrated platform |
 
 ---
 
@@ -209,9 +213,20 @@ npm run test:coverage
 
 # Run linting
 npm run lint
+
+# Check coverage scaling (prevents regression)
+node scripts/coverage-scaling.js check
 ```
 
-**Test Coverage**: 94% (753 tests)
+**Test Coverage**: 65.66% statements, 48.57% branches, 67.01% functions, 65.43% lines (146 tests)
+
+**Quality Gates**:
+- ✅ Global coverage: 55%+ statements required
+- ✅ Critical components (auth, middleware): 95%+ required
+- ✅ Coverage scaling: No regressions allowed
+- ✅ All tests must pass before merge
+
+See [CI/CD Fixes Documentation](CI_FIXES_DOCUMENTATION.md) for details on coverage thresholds and error prevention.
 
 ---
 

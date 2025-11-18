@@ -1,5 +1,11 @@
 # Integrated Workstation Quickstart Guide
 
+**Last Updated**: November 18, 2025  
+**Related Documentation**:
+- [Full Deployment Guide](DEPLOYMENT_INTEGRATED.md)
+- [Rollback Procedures](ROLLBACK_PROCEDURES.md)
+- [CI/CD Fixes & Error Prevention](CI_FIXES_DOCUMENTATION.md)
+
 Get the integrated workstation platform up and running in minutes.
 
 ## Prerequisites
