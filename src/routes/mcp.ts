@@ -576,12 +576,14 @@ router.post('/mcp/prompts/:promptName', authenticateToken, async (req: Request, 
               action: 'navigate',
               parameters: { url: arguments_.url }
             },
-            ...Object.entries(arguments_.fields).map(([selector, value]) => ({
-              name: `fill_${selector.replace(/[^a-z0-9]/gi, '_')}`,
-              agent_type: 'browser',
-              action: 'type',
-              parameters: { selector, text: value }
-            })),
+            ...(arguments_.fields && typeof arguments_.fields === 'object'
+              ? Object.entries(arguments_.fields).map(([selector, value]) => ({
+                  name: `fill_${selector.replace(/[^a-z0-9]/gi, '_')}`,
+                  agent_type: 'browser',
+                  action: 'type',
+                  parameters: { selector, text: value }
+                }))
+              : []),
             {
               name: 'submit',
               agent_type: 'browser',
