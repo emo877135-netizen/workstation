@@ -27,6 +27,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
+      - name: Install Playwright Browsers (Full)
+        if: matrix.node-version == '20.x'
+        run: npx playwright install --with-deps
+      
+      # 📊 Install Graphviz for dependency graph generation (before madge)
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+        continue-on-error: true
+      
+      - name: Generate dependency map
+        run: |
+          npm install -g madge
+          madge --image dependency-graph.svg --extensions ts,js src
+        continue-on-error: true
+      
+      - name: Upload dependency graph
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-graph
+          path: dependency-graph.svg
+        continue-on-error: true
+      
+      - name: Generate documentation
+        run: |
+          npm install -g typedoc
+          npx typedoc --out docs-generated src
+        continue-on-error: true
+      
+      - name: Upload generated documentation
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs-generated
       # 📊 Install Graphviz for dependency graph generation (required for madge)
       - name: Install Graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz
@@ -129,16 +164,6 @@ jobs:
           extra_args: --json --only-verified
         continue-on-error: true
       
-      - name: Secret detection with Gitleaks (optional)
-        run: |
-          if [ -z "${{ secrets.GITLEAKS_LICENSE }}" ]; then
-            echo "GITLEAKS_LICENSE not set — skipping Gitleaks (optional).";
-            echo "To enable Gitleaks, add GITLEAKS_LICENSE to repository secrets.";
-            exit 0;
-          else
-            echo "GITLEAKS_LICENSE present — running Gitleaks action.";
-          fi
-        shell: bash
       - name: Validate Gitleaks License
         id: validate-gitleaks
         uses: ./.github/actions/validate-credentials
@@ -146,6 +171,7 @@ jobs:
           credential-name: 'GITLEAKS_LICENSE'
           credential-value: ${{ secrets.GITLEAKS_LICENSE }}
           filler-patterns: '["PLACEHOLDER", "YOUR_", "FILLER", "EXAMPLE", "TODO", "CHANGEME", "gitleaks"]'
+        continue-on-error: true
       
       - name: Secret detection with Gitleaks or skip
         run: |
@@ -160,8 +186,11 @@ jobs:
           if [ "$CRED_STATUS" = "valid" ]; then
             echo "**Status:** Running with valid license" >> $GITHUB_STEP_SUMMARY
             
-            # Run actual Gitleaks scan
-            docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect \
+            # Run actual Gitleaks scan with license
+            docker run --rm \
+              -v $(pwd):/repo \
+              -e GITLEAKS_LICENSE="${{ secrets.GITLEAKS_LICENSE }}" \
+              zricethezav/gitleaks:latest detect \
               --source /repo \
               --verbose \
               --exit-code 0 || true
