@@ -28,6 +28,7 @@ import { validateEnvironment, printEnvironmentSummary } from './utils/env';
 // Phase 1: Import automation routes and database
 import automationRoutes from './routes/automation';
 import mcpRoutes from './routes/mcp';
+import gitRoutes from './routes/git';
 import gitopsRoutes from './routes/gitops';
 import { initializeDatabase, getDatabase } from './automation/db/database';
 
@@ -219,6 +220,9 @@ app.use('/api/v2', automationRoutes);
 
 // MCP routes for GitHub Copilot integration
 app.use('/api/v2', mcpRoutes);
+
+// Git operations routes for coding agent
+app.use('/api/v2', gitRoutes);
 
 // Git operations API (protected) - low-level ops for automation agents
 app.use('/api/v2/gitops', gitopsRoutes);
