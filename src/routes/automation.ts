@@ -230,4 +230,223 @@ router.post('/execute', authenticateToken, async (req: Request, res: Response) =
   }
 });
 
+/**
+ * Get workflow templates
+ * GET /api/v2/templates
+ */
+router.get('/templates', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const templates = [
+      {
+        id: 'template_google_search',
+        name: 'Google Search',
+        description: 'Search Google and take a screenshot',
+        category: 'search',
+        definition: {
+          tasks: [
+            {
+              name: 'navigate',
+              agent_type: 'browser',
+              action: 'navigate',
+              parameters: { url: 'https://google.com' }
+            },
+            {
+              name: 'search',
+              agent_type: 'browser',
+              action: 'type',
+              parameters: { selector: 'input[name="q"]', text: '{{query}}' }
+            },
+            {
+              name: 'submit',
+              agent_type: 'browser',
+              action: 'click',
+              parameters: { selector: 'input[value="Google Search"]' }
+            },
+            {
+              name: 'screenshot',
+              agent_type: 'browser',
+              action: 'screenshot',
+              parameters: { fullPage: true }
+            }
+          ],
+          variables: { query: 'workstation automation' }
+        }
+      },
+      {
+        id: 'template_form_fill',
+        name: 'Form Filler',
+        description: 'Navigate and fill out a form',
+        category: 'forms',
+        definition: {
+          tasks: [
+            {
+              name: 'navigate',
+              agent_type: 'browser',
+              action: 'navigate',
+              parameters: { url: '{{form_url}}' }
+            },
+            {
+              name: 'fill_name',
+              agent_type: 'browser',
+              action: 'type',
+              parameters: { selector: 'input[name="name"]', text: '{{name}}' }
+            },
+            {
+              name: 'fill_email',
+              agent_type: 'browser',
+              action: 'type',
+              parameters: { selector: 'input[name="email"]', text: '{{email}}' }
+            },
+            {
+              name: 'submit',
+              agent_type: 'browser',
+              action: 'click',
+              parameters: { selector: 'button[type="submit"]' }
+            }
+          ],
+          variables: {
+            form_url: 'https://example.com/form',
+            name: 'John Doe',
+            email: 'john@example.com'
+          }
+        }
+      },
+      {
+        id: 'template_screenshot',
+        name: 'Screenshot Capture',
+        description: 'Navigate to URL and capture screenshot',
+        category: 'capture',
+        definition: {
+          tasks: [
+            {
+              name: 'navigate',
+              agent_type: 'browser',
+              action: 'navigate',
+              parameters: { url: '{{url}}' }
+            },
+            {
+              name: 'wait',
+              agent_type: 'browser',
+              action: 'wait',
+              parameters: { duration: 2000 }
+            },
+            {
+              name: 'screenshot',
+              agent_type: 'browser',
+              action: 'screenshot',
+              parameters: { fullPage: true }
+            }
+          ],
+          variables: { url: 'https://example.com' }
+        }
+      },
+      {
+        id: 'template_data_extraction',
+        name: 'Data Extractor',
+        description: 'Extract text from a webpage',
+        category: 'extraction',
+        definition: {
+          tasks: [
+            {
+              name: 'navigate',
+              agent_type: 'browser',
+              action: 'navigate',
+              parameters: { url: '{{url}}' }
+            },
+            {
+              name: 'extract',
+              agent_type: 'browser',
+              action: 'getText',
+              parameters: { selector: '{{selector}}' }
+            }
+          ],
+          variables: {
+            url: 'https://example.com',
+            selector: 'body'
+          }
+        }
+      },
+      {
+        id: 'template_login',
+        name: 'Login Flow',
+        description: 'Automated login workflow',
+        category: 'authentication',
+        definition: {
+          tasks: [
+            {
+              name: 'navigate',
+              agent_type: 'browser',
+              action: 'navigate',
+              parameters: { url: '{{login_url}}' }
+            },
+            {
+              name: 'enter_username',
+              agent_type: 'browser',
+              action: 'type',
+              parameters: { selector: 'input[name="username"]', text: '{{username}}' }
+            },
+            {
+              name: 'enter_password',
+              agent_type: 'browser',
+              action: 'type',
+              parameters: { selector: 'input[name="password"]', text: '{{password}}' }
+            },
+            {
+              name: 'submit',
+              agent_type: 'browser',
+              action: 'click',
+              parameters: { selector: 'button[type="submit"]' }
+            }
+          ],
+          variables: {
+            login_url: 'https://example.com/login',
+            username: '',
+            password: ''
+          }
+        }
+      }
+    ];
+
+    res.json({
+      success: true,
+      data: templates,
+      count: templates.length
+    });
+  } catch (error) {
+    logger.error('Failed to get templates', { error });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get templates'
+    });
+  }
+});
+
+/**
+ * Get template by ID
+ * GET /api/v2/templates/:id
+ */
+router.get('/templates/:id', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    // In a real implementation, this would query a database
+    // For now, we'll return a simple hardcoded template
+    res.json({
+      success: true,
+      data: {
+        id: req.params.id,
+        name: 'Template',
+        description: 'Workflow template',
+        definition: {
+          tasks: []
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get template', { error });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get template'
+    });
+  }
+});
+
 export default router;

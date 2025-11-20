@@ -97,6 +97,10 @@ npm run test:chrome
 - 🔐 Secure JWT authentication
 - ⚡ Real-time execution feedback
 - 📊 Workflow status monitoring
+- 📜 Workflow history with save/load
+- ⚙️ Configurable settings (backend URL, poll interval)
+- 🔄 Real-time status polling
+- 💾 Persistent workflow storage
 
 📖 [Complete Chrome Extension Documentation](chrome-extension/README.md)
 
