@@ -41,6 +41,7 @@ import automationRoutes from './routes/automation';
 import mcpRoutes from './routes/mcp';
 import gitRoutes from './routes/git';
 import gitopsRoutes from './routes/gitops';
+import authRoutes from './routes/auth';
 import { initializeDatabase, getDatabase } from './automation/db/database';
 
 // Validate environment configuration
@@ -211,6 +212,9 @@ app.get('/api/agent/status', authenticateToken, (req: Request, res: Response) =>
 
 // Phase 1: Mount automation routes
 app.use('/api/v2', automationRoutes);
+
+// Auth routes for SaaS platform
+app.use('/api/auth', authRoutes);
 
 // MCP routes for GitHub Copilot integration
 app.use('/api/v2', mcpRoutes);
