@@ -248,18 +248,20 @@ The extension uses:
 - [x] Settings page for backend URL configuration
 - [x] Configurable poll interval for status updates
 
-### v1.2 Features (Planned)
-- [ ] Multiple workspace support
-- [ ] Workflow templates library - Pre-built automation examples
-- [ ] Export/Import workflows - Share workflows with team
+### v1.2 Features ✅ IMPLEMENTED
+- [x] Workflow templates library - Pre-built automation examples (5 templates)
+- [x] Template categories (search, forms, capture, extraction, authentication)
+- [x] Click-to-load templates
+- [ ] Multiple workspace support (Future)
+- [ ] Export/Import workflows (Future)
 
-### v2.0 Features (Future)
+### v2.0 Features (Planned)
 - [ ] AI-powered workflow suggestions
 - [ ] Browser action automation preview
 - [ ] Collaborative workflow sharing
 - [ ] Chrome Web Store publication
 
-## v1.1 Features Overview
+## v1.1 & v1.2 Features Overview
 
 ### Workflow History
 - **View Past Executions**: See all previously executed workflows
@@ -285,7 +287,30 @@ The extension uses:
 - **Auto-Retry**: Enable/disable automatic retry on failure (default: enabled)
 - **Persistent Settings**: Settings saved to Chrome storage
 
+### Workflow Templates (NEW!)
+- **5 Pre-Built Templates**: Ready-to-use automation workflows
+- **Categories**: search, forms, capture, extraction, authentication
+- **Click-to-Load**: Load template into execute tab with one click
+- **Customizable Variables**: Each template includes configurable variables
+- **Backend Integration**: Templates fetched from `/api/v2/templates` endpoint
+
+**Available Templates:**
+1. **Google Search** - Search Google and take a screenshot
+2. **Form Filler** - Navigate and fill out forms automatically
+3. **Screenshot Capture** - Navigate to URL and capture full-page screenshot
+4. **Data Extractor** - Extract text content from webpages
+5. **Login Flow** - Automated login workflow with credentials
+
 ## Updated Usage
+
+### Using Templates
+
+1. Click "Templates" tab
+2. Browse available templates by category
+3. Click any template to load it
+4. Template description loads into Execute tab
+5. Customize variables if needed
+6. Click "Execute Workflow"
 
 ### Using the History Tab
 

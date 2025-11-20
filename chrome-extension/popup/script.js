@@ -19,6 +19,9 @@ const recordingIndicator = document.getElementById('recordingIndicator');
 const historyList = document.getElementById('historyList');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
+// DOM elements - Templates Tab
+const templatesList = document.getElementById('templatesList');
+
 // DOM elements - Settings Tab
 const backendUrlInput = document.getElementById('backendUrl');
 const pollIntervalInput = document.getElementById('pollInterval');
@@ -44,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await loadRecordedActions();
   await loadHistory();
+  await loadTemplates();
   setupTabNavigation();
 });
 
@@ -68,9 +72,11 @@ function switchTab(tabName) {
   tabContents.forEach(content => content.classList.remove('active'));
   document.getElementById(`${tabName}Tab`).classList.add('active');
   
-  // Refresh data if switching to history
+  // Refresh data if switching to history or templates
   if (tabName === 'history') {
     loadHistory();
+  } else if (tabName === 'templates') {
+    loadTemplates();
   }
 }
 
@@ -368,6 +374,70 @@ async function updateHistoryStatus(id, status) {
     item.status = status;
     await chrome.storage.local.set({ workflowHistory: history });
   }
+}
+
+/**
+ * Templates Management
+ */
+async function loadTemplates() {
+  try {
+    const response = await fetch(`${settings.backendUrl}/api/v2/templates`, {
+      headers: {
+        'Authorization': `Bearer ${await getToken()}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const result = await response.json();
+    const templates = result.data || [];
+    
+    if (templates.length === 0) {
+      templatesList.innerHTML = '<div class="templates-empty">No templates available</div>';
+      return;
+    }
+    
+    templatesList.innerHTML = templates.map(template => `
+      <div class="template-item" data-id="${template.id}">
+        <div class="template-item-header">
+          <div class="template-item-title">${escapeHtml(template.name)}</div>
+          <span class="template-item-category">${template.category}</span>
+        </div>
+        <div class="template-item-description">${escapeHtml(template.description)}</div>
+      </div>
+    `).join('');
+    
+    // Add click handlers
+    document.querySelectorAll('.template-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.id;
+        const template = templates.find(t => t.id === id);
+        if (template) {
+          loadTemplate(template);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Failed to load templates:', error);
+    templatesList.innerHTML = '<div class="templates-empty">Failed to load templates</div>';
+  }
+}
+
+function loadTemplate(template) {
+  // Load template description into execute tab
+  promptTextarea.value = template.description || template.name;
+  
+  // Could also set up the workflow definition for execution
+  // For now, just switch to execute tab
+  switchTab('execute');
+  showStatus(`Template "${template.name}" loaded`, 'info');
+}
+
+async function getToken() {
+  const { workstationToken } = await chrome.storage.local.get('workstationToken');
+  return workstationToken || '';
 }
 
 /**
