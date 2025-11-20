@@ -53,12 +53,21 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
     }
 
     // Add sorting
-    const validSortFields = ['created_at', 'updated_at', 'name', 'total_executions', 'avg_duration_ms'];
-    const validOrders = ['ASC', 'DESC'];
-    
-    const sortField = validSortFields.includes(sortBy as string) ? sortBy : 'updated_at';
-    const sortOrder = validOrders.includes((order as string).toUpperCase()) ? order : 'DESC';
-    
+    const sortFieldMap: { [key: string]: string } = {
+      created_at: "created_at",
+      updated_at: "updated_at",
+      name: "name",
+      total_executions: "total_executions",
+      avg_duration_ms: "avg_duration_ms"
+    };
+    const orderMap: { [key: string]: "ASC" | "DESC" } = {
+      ASC: "ASC",
+      DESC: "DESC"
+    };
+
+    const sortField = sortFieldMap[sortBy as string] ?? "updated_at";
+    const sortOrder = orderMap[(order as string).toUpperCase()] ?? "DESC";
+
     query += ` ORDER BY ${sortField} ${sortOrder}`;
 
     // Add pagination
