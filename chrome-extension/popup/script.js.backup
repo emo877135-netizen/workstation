@@ -179,12 +179,6 @@ saveBtn.addEventListener('click', async () => {
   
   showStatus('✅ Workflow saved successfully!', 'success');
 });
-
-/**
- * Record Actions
- */
-// Record button click
-recordBtn.addEventListener('click', async () => {
   isRecording = true;
   recordBtn.style.display = 'none';
   stopBtn.style.display = 'flex';
@@ -224,9 +218,7 @@ clearBtn.addEventListener('click', async () => {
   });
 });
 
-/**
- * Execute Workflow with Status Polling
- */
+// Execute button click
 executeBtn.addEventListener('click', async () => {
   const prompt = promptTextarea.value.trim();
   
@@ -249,46 +241,17 @@ executeBtn.addEventListener('click', async () => {
     
     chrome.runtime.sendMessage(
       { action: 'executeWorkflow', workflow },
-      async (response) => {
+      (response) => {
+        executeBtn.disabled = false;
+        executeBtn.textContent = '🚀 Execute Workflow';
+        
         if (response && response.success) {
-          currentExecutionId = response.data.execution?.id;
-          
-          // Save to history with running status
-          await addToHistory({
-            id: currentExecutionId || generateId(),
-            description: prompt,
-            timestamp: Date.now(),
-            status: 'running'
-          });
-          
-          // Start polling for status
-          if (currentExecutionId) {
-            startStatusPolling(currentExecutionId);
-          } else {
-            // Execution completed immediately
-            executeBtn.disabled = false;
-            executeBtn.textContent = '🚀 Execute Workflow';
-            showStatus('✅ Workflow executed successfully!', 'success');
-            displayResult(response.data);
-            
-            // Update history with success
-            await updateHistoryStatus(currentExecutionId || generateId(), 'success');
-          }
+          showStatus('✅ Workflow executed successfully!', 'success');
+          displayResult(response.data);
         } else {
-          executeBtn.disabled = false;
-          executeBtn.textContent = '🚀 Execute Workflow';
           const errorMsg = response?.error || 'Unknown error occurred';
           showStatus(`❌ Execution failed: ${errorMsg}`, 'error');
           displayResult({ error: errorMsg });
-          
-          // Save to history with error status
-          await addToHistory({
-            id: generateId(),
-            description: prompt,
-            timestamp: Date.now(),
-            status: 'error',
-            error: errorMsg
-          });
         }
       }
     );
@@ -299,76 +262,6 @@ executeBtn.addEventListener('click', async () => {
     displayResult({ error: error.message });
   }
 });
-
-/**
- * Status Polling
- */
-function startStatusPolling(executionId) {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-  }
-  
-  pollingInterval = setInterval(async () => {
-    chrome.runtime.sendMessage(
-      { action: 'getExecutionStatus', executionId },
-      async (response) => {
-        if (!response || response.error) {
-          stopStatusPolling();
-          executeBtn.disabled = false;
-          executeBtn.textContent = '🚀 Execute Workflow';
-          return;
-        }
-        
-        const status = response.status;
-        
-        if (status === 'completed') {
-          stopStatusPolling();
-          executeBtn.disabled = false;
-          executeBtn.textContent = '🚀 Execute Workflow';
-          showStatus('✅ Workflow completed successfully!', 'success');
-          displayResult(response.result || {});
-          await updateHistoryStatus(executionId, 'success');
-        } else if (status === 'failed') {
-          stopStatusPolling();
-          executeBtn.disabled = false;
-          executeBtn.textContent = '🚀 Execute Workflow';
-          showStatus(`❌ Workflow failed: ${response.error}`, 'error');
-          displayResult({ error: response.error });
-          await updateHistoryStatus(executionId, 'error');
-        } else if (status === 'running') {
-          showStatus(`⏳ Running... (${response.progress || 0}%)`, 'info');
-        }
-      }
-    );
-  }, settings.pollInterval);
-}
-
-function stopStatusPolling() {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-    pollingInterval = null;
-  }
-}
-
-/**
- * History Helpers
- */
-async function addToHistory(workflow) {
-  const stored = await chrome.storage.local.get(['workflowHistory']);
-  const history = stored.workflowHistory || [];
-  history.push(workflow);
-  await chrome.storage.local.set({ workflowHistory: history });
-}
-
-async function updateHistoryStatus(id, status) {
-  const stored = await chrome.storage.local.get(['workflowHistory']);
-  const history = stored.workflowHistory || [];
-  const item = history.find(w => w.id === id);
-  if (item) {
-    item.status = status;
-    await chrome.storage.local.set({ workflowHistory: history });
-  }
-}
 
 /**
  * Load recorded actions from storage
@@ -410,43 +303,4 @@ function displayResult(data) {
   resultDiv.innerHTML = '';
   resultDiv.appendChild(pre);
   resultDiv.classList.add('visible');
-}
-
-/**
- * Utility Functions
- */
-function generateId() {
-  return `wf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now - date;
-  
-  // Less than a minute
-  if (diff < 60000) {
-    return 'Just now';
-  }
-  
-  // Less than an hour
-  if (diff < 3600000) {
-    const mins = Math.floor(diff / 60000);
-    return `${mins} minute${mins > 1 ? 's' : ''} ago`;
-  }
-  
-  // Less than a day
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000);
-    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  }
-  
-  // Format as date
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 }

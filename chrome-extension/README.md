@@ -240,6 +240,93 @@ The extension uses:
 
 ## Roadmap
 
+### v1.1 Features ✅ IMPLEMENTED
+- [x] Workflow history in popup - View past workflows with status
+- [x] Save and reuse workflows - Persistent workflow storage
+- [x] Execution status polling - Real-time status updates
+- [x] Error retry mechanism - Integrated into UI with automatic retries
+- [x] Settings page for backend URL configuration
+- [x] Configurable poll interval for status updates
+
+### v1.2 Features (Planned)
+- [ ] Multiple workspace support
+- [ ] Workflow templates library - Pre-built automation examples
+- [ ] Export/Import workflows - Share workflows with team
+
+### v2.0 Features (Future)
+- [ ] AI-powered workflow suggestions
+- [ ] Browser action automation preview
+- [ ] Collaborative workflow sharing
+- [ ] Chrome Web Store publication
+
+## v1.1 Features Overview
+
+### Workflow History
+- **View Past Executions**: See all previously executed workflows
+- **Status Tracking**: Each workflow shows its status (success, error, running, saved)
+- **Quick Reload**: Click any history item to load it into the execute tab
+- **Timestamps**: Human-readable timestamps (e.g., "5 minutes ago", "2 hours ago")
+- **Clear History**: Option to clear all history
+
+### Save & Load Workflows  
+- **Save for Later**: Save workflow descriptions without executing them
+- **Reuse Workflows**: Reload saved workflows with a single click
+- **Persistent Storage**: Workflows stored in Chrome's local storage
+
+### Real-Time Status Polling
+- **Live Updates**: Automatically polls backend for execution status
+- **Progress Tracking**: Shows execution progress percentage when available
+- **Configurable Interval**: Adjust polling frequency in settings (500ms - 10s)
+- **Auto-Stop**: Polling stops when workflow completes or fails
+
+### Settings Page
+- **Backend URL**: Configure custom backend URL (default: http://localhost:3000)
+- **Poll Interval**: Adjust how often to check execution status (default: 2000ms)
+- **Auto-Retry**: Enable/disable automatic retry on failure (default: enabled)
+- **Persistent Settings**: Settings saved to Chrome storage
+
+## Updated Usage
+
+### Using the History Tab
+
+1. Click "History" tab to view all workflows
+2. Each item shows:
+   - Workflow description
+   - Status badge (success, error, running, saved)
+   - Timestamp
+3. Click any item to load it into the execute tab
+4. Use "Clear All" to remove all history
+
+### Saving Workflows
+
+1. Enter workflow description in the Execute tab
+2. Click "💾 Save" button (no execution)
+3. Workflow saved to history with "saved" status
+4. Access later from History tab
+
+### Configuring Settings
+
+1. Click "Settings" tab
+2. Modify:
+   - Backend URL (e.g., for production deployment)
+   - Status Poll Interval (in milliseconds)
+   - Auto-Retry toggle
+3. Click "💾 Save Settings"
+4. Settings applied immediately
+
+### Real-Time Execution Monitoring
+
+When you execute a workflow:
+1. Workflow immediately added to history with "running" status
+2. Extension polls backend every N milliseconds (configurable)
+3. Status updates shown in real-time:
+   - "⏳ Running... (25%)"
+   - "⏳ Running... (50%)"
+   - "✅ Workflow completed successfully!"
+4. Final status saved to history
+
+## Roadmap
+
 ### v1.1 (Planned)
 - [ ] Workflow history in popup
 - [ ] Save and reuse workflows
