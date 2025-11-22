@@ -1,7 +1,41 @@
+/// <reference types="jest" />
+
 import { generateToken, verifyToken, generateDemoToken } from '../src/auth/jwt';
+import request from 'supertest';
+import app from '../src/index';
 
 describe('JWT Authentication', () => {
+  describe('authenticateToken middleware', () => {
+    it('should allow access to protected route with valid token', async () => {
+      const payload = { userId: 'test-user', role: 'user' };
+      const token = generateToken(payload);
+      
+      const response = await request(app)
+        .get('/api/protected')
+        .set('Authorization', `Bearer ${token}`);
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message', 'Access granted to protected resource');
+      expect(response.body.user).toHaveProperty('userId', 'test-user');
+    });
 
+    it('should return 401 when no token is provided', async () => {
+      const response = await request(app)
+        .get('/api/protected');
+      
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ error: 'No token provided' });
+    });
+
+    it('should return 403 for invalid token', async () => {
+      const response = await request(app)
+        .get('/api/protected')
+        .set('Authorization', 'Bearer invalid-token');
+      
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ error: 'Invalid or expired token' });
+    });
+  });
 
   describe('generateToken', () => {
     it('should generate a valid token', () => {
