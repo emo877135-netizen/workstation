@@ -51,7 +51,84 @@ This guide explains how agents communicate, coordinate, and hand off work in the
 
 ---
 
-## Communication Patterns
+## Shared Libraries and Patterns
+
+### Using Shared Utilities
+
+The Workstation platform provides shared libraries in `src/shared/` to promote code reuse and consistency across all agents.
+
+**Available Modules:**
+- `@workstation/shared` - Logger, retry utilities, types
+- Logging: Structured logging with levels and metadata
+- Retry: Exponential backoff, circuit breaker, rate limiting
+- Types: Common interfaces and type definitions
+
+**Example: Using Shared Logger**
+
+```typescript
+import { createLogger } from '../../../src/shared';
+
+const logger = createLogger('agent-browser-1');
+
+logger.info('Agent started', { port: 3000 });
+logger.warn('High memory usage', { usage: '85%' });
+logger.error('Task failed', { taskId: '123', error: 'Timeout' });
+```
+
+**Example: Using Retry Utilities**
+
+```typescript
+import { withRetry, CircuitBreaker } from '../../../src/shared';
+
+// Retry with exponential backoff
+const result = await withRetry(
+  () => fetch('https://api.example.com/data'),
+  {
+    maxRetries: 3,
+    baseDelay: 1000,
+    onRetry: (attempt, error) => {
+      logger.warn('Retrying API call', { attempt, error: error.message });
+    }
+  }
+);
+
+// Circuit breaker for external services
+const breaker = new CircuitBreaker(5, 60000);
+
+async function callExternalAPI() {
+  return breaker.execute(async () => {
+    const response = await fetch('https://external.com');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  });
+}
+```
+
+**Example: Using Shared Types**
+
+```typescript
+import type { AgentHandoff, TaskPayload, TaskResult } from '../../../src/shared';
+
+async function processHandoff(handoff: AgentHandoff) {
+  logger.info('Processing handoff', {
+    from: handoff.fromAgent,
+    to: handoff.toAgent,
+    type: handoff.handoffType
+  });
+  
+  const result: TaskResult = {
+    success: true,
+    data: handoff.data,
+    executionTime: Date.now() - new Date(handoff.timestamp).getTime()
+  };
+  
+  return result;
+}
+```
+
+---
+
+## Common Integration Patterns
 
 ### 1. Direct Task Assignment
 
