@@ -34,6 +34,13 @@
       "description": "Automated version snapshot",
       "docker_path": ".versions/docker/Phase 4 Complete: 16 workflow templates, all infrastructure verified",
       "mcp_path": ".versions/mcp/Phase 4 Complete: 16 workflow templates, all infrastructure verified"
+    },
+    {
+      "version": "phase4-step4-workflow-builder-start",
+      "created": "2025-11-24T21:48:24+00:00",
+      "description": "Before Phase 4 Step 4: Workflow Builder rebuild - 30+ templates, visual builder, real-time preview",
+      "docker_path": ".versions/docker/phase4-step4-workflow-builder-start",
+      "mcp_path": ".versions/mcp/phase4-step4-workflow-builder-start"
     }
   ]
 }
