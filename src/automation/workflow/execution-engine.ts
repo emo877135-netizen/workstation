@@ -79,6 +79,11 @@ export class ExecutionEngine {
         stepCount: context.totalSteps,
       });
 
+      // Validate steps exist
+      if (!definition.steps || !Array.isArray(definition.steps)) {
+        throw new Error('Workflow definition does not contain valid steps');
+      }
+
       // Execute steps sequentially
       for (let i = 0; i < context.totalSteps; i++) {
         const step = definition.steps[i];

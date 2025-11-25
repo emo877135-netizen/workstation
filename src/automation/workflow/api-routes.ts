@@ -12,8 +12,16 @@ import { Router, Request, Response } from 'express';
 import { workflowService } from './service.js';
 import { logger } from '../../shared/utils/logger.js';
 import { withRetry } from '../../shared/utils/retry.js';
+import { TemplateLoader } from './template-loader.js';
+import { ExecutionEngine } from './execution-engine.js';
+import { StateManager } from './state-manager.js';
 
 const router = Router();
+
+// Initialize services
+const templateLoader = new TemplateLoader();
+const executionEngine = new ExecutionEngine();
+const stateManager = new StateManager();
 
 /**
  * GET /api/workflows/templates
@@ -21,20 +29,26 @@ const router = Router();
  */
 router.get('/templates', async (req: Request, res: Response) => {
   try {
-    // In production, load from template-loader
-    const templates = [
-      {
-        id: 'template_1',
-        name: 'Web Scraping Template',
-        description: 'Extract data from websites',
-        category: 'data-extraction',
-        steps: [],
-        metadata: { difficulty: 'beginner' },
-      },
-      // Additional templates would be loaded here
-    ];
+    const { category, difficulty } = req.query;
+    
+    // Use TemplateLoader to get real templates
+    let templates = templateLoader.getAllTemplates();
+    
+    // Filter by category if provided
+    if (category && typeof category === 'string') {
+      templates = templateLoader.getTemplatesByCategory(category);
+    }
+    
+    // Filter by difficulty if provided
+    if (difficulty && typeof difficulty === 'string') {
+      templates = templates.filter(t => t.difficulty === difficulty);
+    }
 
-    logger.info('Fetched workflow templates', { count: templates.length });
+    logger.info('Fetched workflow templates', { 
+      count: templates.length,
+      category,
+      difficulty 
+    });
     
     res.json({
       success: true,
@@ -60,14 +74,18 @@ router.get('/templates/:templateId', async (req: Request, res: Response) => {
   try {
     const { templateId } = req.params;
 
-    // Load template (would use template-loader in production)
-    const template = {
-      id: templateId,
-      name: 'Sample Template',
-      description: 'Sample workflow template',
-      category: 'general',
-      steps: [],
-    };
+    // Use TemplateLoader to get specific template
+    const template = templateLoader.getTemplate(templateId);
+    
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        error: 'Template not found',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    logger.info('Fetched template', { templateId });
 
     res.json({
       success: true,
@@ -91,18 +109,24 @@ router.get('/templates/:templateId', async (req: Request, res: Response) => {
 router.post('/templates/:templateId/create', async (req: Request, res: Response) => {
   try {
     const { templateId } = req.params;
-    const { name, variables } = req.body;
+    const { name, variables, owner_id } = req.body;
 
-    // Create workflow from template
+    // Get template from loader
+    const template = templateLoader.getTemplate(templateId);
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        error: 'Template not found',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Use template's definition directly (already contains steps)
     const workflow = await workflowService.createWorkflow({
-      name: name || `Workflow from ${templateId}`,
-      description: `Created from template ${templateId}`,
-      definition: {
-        steps: [],
-        triggers: [],
-        variables: variables || {},
-      },
-      owner_id: 'system',
+      name: name || template.name,
+      description: template.description,
+      definition: template.definition,
+      owner_id: owner_id || 'system',
       workspace_id: 'default',
     });
 
@@ -146,13 +170,38 @@ router.post('/:workflowId/execute', async (req: Request, res: Response) => {
       });
     }
 
-    // Initialize execution context
+    // Generate execution ID
     const executionId = `exec_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    await workflowService.initializeOrchestrationContext(
-      workflowId,
-      executionId,
-      variables
-    );
+    
+    // Create state for this execution
+    const totalSteps = workflow.definition.steps?.length || 0;
+    stateManager.createState(executionId, workflowId, totalSteps, variables || {});
+    stateManager.updateState(executionId, { status: 'running' });
+
+    // Execute workflow using ExecutionEngine (async)
+    executionEngine.execute(workflowId, executionId, workflow.definition, variables || {})
+      .then((result) => {
+        stateManager.updateState(executionId, {
+          status: 'completed',
+          progress: 100,
+        });
+        logger.info('Workflow execution completed', { 
+          workflowId, 
+          executionId,
+          status: result.status 
+        });
+      })
+      .catch((error) => {
+        stateManager.updateState(executionId, {
+          status: 'failed',
+          error: error.message,
+        });
+        logger.error('Workflow execution failed', { 
+          workflowId, 
+          executionId, 
+          error: error.message 
+        });
+      });
 
     logger.info('Workflow execution started', { workflowId, executionId });
 
@@ -184,16 +233,29 @@ router.get('/executions/:executionId', async (req: Request, res: Response) => {
   try {
     const { executionId } = req.params;
 
-    // Get execution metrics
-    const metrics = await workflowService.getOrchestrationMetrics(executionId);
+    // Get execution state from StateManager
+    const state = stateManager.getState(executionId);
+    
+    if (!state) {
+      return res.status(404).json({
+        success: false,
+        error: 'Execution not found',
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     res.json({
       success: true,
       data: {
         executionId,
-        status: 'running',
-        progress: Math.min((metrics.checkpoints / 10) * 100, 100),
-        currentStep: `Step ${metrics.checkpoints}`,
+        status: state.status,
+        progress: state.progress,
+        currentStep: state.currentStep,
+        totalSteps: state.totalSteps,
+        error: state.error,
+        startedAt: state.startedAt,
+        completedAt: state.completedAt,
+        updatedAt: state.updatedAt,
       },
       timestamp: new Date().toISOString(),
     });
