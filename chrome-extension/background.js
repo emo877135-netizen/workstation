@@ -1,9 +1,18 @@
 /**
  * Workstation Chrome Extension - Background Service Worker
- * v2.0.0 - Enhanced with 25+ Agent Integration, MCP Sync, and Performance Monitoring
+ * v2.1.0 - Phase 3 Complete: Auto-Update, Error Reporting, Enhanced MCP Sync with Pako Compression
  * Handles JWT authentication and API communication with Workstation backend
  * Enterprise-grade browser automation with connection pooling and health monitoring
  */
+
+// Load pako compression library for service worker
+// Note: importScripts must be called before any ES6 imports in service workers
+try {
+  importScripts('lib/pako.min.js');
+  console.log('[Background] Pako compression library loaded');
+} catch (error) {
+  console.warn('[Background] Failed to load pako, compression will use fallback:', error);
+}
 
 // Import API Bridge
 import { getAPIBridge } from './api-bridge.js';
@@ -13,6 +22,12 @@ import agentRegistry from './agent-registry.js';
 
 // Import MCP Sync Manager
 import { mcpSyncManager } from './mcp-sync-manager.js';
+
+// Phase 3: Import Auto-Updater
+import { autoUpdater } from './auto-updater.js';
+
+// Phase 3: Import Error Reporter
+import { errorReporter } from './error-reporter.js';
 
 // Import Playwright execution engine
 import { PlaywrightExecution } from './playwright/execution.js';
@@ -48,6 +63,7 @@ agenticContextLearner.initialize().then(() => {
   console.log('🧠 Agentic context learner initialized in background');
 }).catch((error) => {
   console.error('❌ Failed to initialize context learner:', error);
+  errorReporter.captureError(error, { context: 'context_learner_init' });
 });
 
 // Initialize Agent Registry
@@ -58,31 +74,59 @@ agentRegistry.initialize(backendUrl).then((result) => {
   }
 }).catch((error) => {
   console.error('❌ Failed to initialize agent registry:', error);
+  errorReporter.captureError(error, { context: 'agent_registry_init' });
 });
 
 // Initialize MCP Sync Manager
 mcpSyncManager.initialize().then(() => {
-  console.log('🔄 MCP Sync Manager initialized');
+  console.log('🔄 MCP Sync Manager v2.0 initialized with compression and deduplication');
 }).catch((error) => {
   console.error('❌ Failed to initialize MCP sync:', error);
+  errorReporter.captureError(error, { context: 'mcp_sync_init' });
 });
 
-// Log performance and connection pool stats
+// Phase 3: Initialize Auto-Updater
+autoUpdater.initialize().then((result) => {
+  console.log(`🔄 Auto-Updater initialized: v${result.version}`);
+}).catch((error) => {
+  console.error('❌ Failed to initialize auto-updater:', error);
+  errorReporter.captureError(error, { context: 'auto_updater_init' });
+});
+
+// Phase 3: Initialize Error Reporter
+errorReporter.initialize({
+  enabled: true,
+  environment: 'production'
+}).then((result) => {
+  console.log(`📊 Error Reporter initialized (Sentry: ${result.sentryEnabled})`);
+}).catch((error) => {
+  console.error('❌ Failed to initialize error reporter:', error);
+});
+
+// Log performance and connection pool stats (Phase 3: Enhanced with new stats)
 setInterval(() => {
   const perfStats = performanceMonitor.getSummary();
   const poolStats = connectionPool.getStats();
   const agentStats = agentRegistry.getStats();
   const syncStats = mcpSyncManager.getStats();
+  const updateStats = autoUpdater.getStats();
+  const errorStats = errorReporter.getStats();
   
   console.log('📊 System Stats:', {
     performance: `${perfStats.successRate.toFixed(1)}% success, ${perfStats.completedOperations} ops`,
     connections: `${poolStats.inUseConnections}/${poolStats.totalConnections} in use`,
     agents: `${agentStats.totalAgents} total, ${agentStats.systemHealth.healthyAgents} healthy`,
-    sync: `${syncStats.syncedEntries}/${syncStats.totalEntries} synced, ${syncStats.pendingSync} pending`
+    sync: `${syncStats.syncedEntries}/${syncStats.totalEntries} synced, ${syncStats.pendingSync} pending`,
+    compression: `${syncStats.compression.averageRatio} saved`,
+    deduplication: `${syncStats.deduplication.duplicateRate} duplicates`,
+    version: `v${updateStats.currentVersion}`,
+    errors: `${errorStats.totalErrors} total, ${errorStats.reportedErrors} reported`
   });
 }, 60000); // Log every minute
 
-console.log('🚀 Workstation extension v2.0.0 with 25+ agents and MCP sync initialized');
+console.log('🚀 Workstation extension v2.1.0 - Phase 3 Complete');
+console.log('✅ Features: Auto-Update, Error Reporting, Enhanced MCP Sync with Compression');
+
 
 // Auto-connect functionality
 async function autoConnectToBackend() {

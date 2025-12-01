@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc && npm run copy-assets",
     "copy-assets": "mkdir -p dist/automation/db && cp src/automation/db/schema.sql dist/automation/db/",
-    "build:chrome": "rm -rf build/chrome-extension && mkdir -p build/chrome-extension && cp -r chrome-extension/* build/chrome-extension/",
+    "build:chrome": "./scripts/build-chrome-extension.sh",
+    "package:chrome": "./scripts/build-chrome-extension.sh",
     "deploy:chrome": "./scripts/deploy-chrome-extension.sh",
     "build:downloads": "node scripts/build-downloads.js",
     "generate:manifest": "node scripts/generate-manifest.js",
@@ -104,6 +105,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.937.0",
     "@aws-sdk/s3-request-presigner": "^3.937.0",
+    "@e965/xlsx": "^0.20.3",
     "@googleapis/gmail": "^15.0.0",
     "@octokit/rest": "^22.0.1",
     "@opentelemetry/auto-instrumentations-node": "^0.67.1",
@@ -111,6 +113,7 @@
     "@opentelemetry/resources": "^2.2.0",
     "@opentelemetry/sdk-node": "^0.208.0",
     "@opentelemetry/semantic-conventions": "^1.38.0",
+    "@sentry/browser": "^10.27.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cheerio": "^0.22.35",
     "@types/d3": "^7.4.3",
@@ -119,6 +122,7 @@
     "@types/ms": "^2.1.0",
     "@types/natural": "^5.1.5",
     "@types/node-cron": "^3.0.11",
+    "@types/pako": "^2.0.4",
     "@types/pg": "^8.11.0",
     "@types/uuid": "^9.0.7",
     "@types/ws": "^8.5.10",
@@ -143,6 +147,7 @@
     "natural": "^8.1.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.10",
+    "pako": "^2.1.0",
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.17.2",
     "pg": "^8.11.3",
@@ -160,7 +165,6 @@
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "ws": "^8.16.0",
-    "@e965/xlsx": "^0.20.3",
     "zod": "^4.1.13"
   },
   "devDependencies": {
