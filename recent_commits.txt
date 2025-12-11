@@ -1,3 +1,1 @@
-- 1c165b9: Create webpack.yml
-- 172fa84: Standardize automated workflows to use PR-based updates with security fixes (#333)
-- 5763542: Copilot/build phase 6 integration layer (#314)
+- bb588a5: 🔄 Auto-rollback: Restored from backup after workflow failure
