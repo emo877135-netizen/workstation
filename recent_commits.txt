@@ -1,1 +1,1 @@
-- 6390a5d: 🔄 Auto-rollback: Restored from backup after workflow failure
+- ebe53de: 🔄 Auto-rollback: Restored from backup after workflow failure
