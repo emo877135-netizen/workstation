@@ -1,1 +1,1 @@
-- 8aca590: 🔄 Auto-rollback: Restored from backup after workflow failure
+- 2d4227a: 🔄 Auto-rollback: Restored from backup after workflow failure
